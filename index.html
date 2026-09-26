@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XPCLUB.VN - Máy Bay</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:Arial,sans-serif;
+  background:#07101e;color:white;
+  min-height:100vh;
+}
+header{
+  padding:18px;text-align:center;
+  background:#0d1b30;
+  border-bottom:2px solid #00d9ff;
+}
+.logo{
+  font-size:27px;font-weight:bold;
+  color:#00e5ff;
+  text-shadow:0 0 15px #00bfff;
+}
+header p{font-size:12px;color:#a5b8d0;margin-top:6px}
+.container{max-width:600px;margin:auto;padding:15px}
+.card{
+  background:#101e33;border:1px solid #233b5d;
+  border-radius:15px;padding:18px;margin-bottom:15px;
+}
+h2{font-size:18px;margin-bottom:15px;color:#00e5ff}
+input,select,button{
+  width:100%;padding:13px;margin:6px 0;
+  border-radius:9px;border:1px solid #304969;
+  background:#091426;color:white;font-size:14px;
+}
+button{
+  background:linear-gradient(90deg,#007bff,#00d9ff);
+  color:white;font-weight:bold;border:none;cursor:pointer;
+}
+button:active{transform:scale(.98)}
+.btn-red{background:linear-gradient(90deg,#ff3030,#ff7800)}
+.btn-green{background:linear-gradient(90deg,#00b86b,#00e5a0)}
+.btn-purple{background:linear-gradient(90deg,#792cff,#c400ff)}
+.small{font-size:12px;color:#91a8c4}
+.balance{
+  font-size:28px;font-weight:bold;color:#00ffad;
+  margin:10px 0;
+}
+.hidden{display:none!important}
+.tabs{display:flex;gap:8px;margin-bottom:12px}
+.tabs button{flex:1;font-size:12px;padding:12px 5px}
+.plane-area{
+  height:240px;position:relative;overflow:hidden;
+  background:linear-gradient(180deg,#0b2447,#102b48 65%,#0b192b);
+  border-radius:12px;border:1px solid #26496c;
+  margin-bottom:15px;
+}
+.cloud{
+  position:absolute;color:#365779;font-size:35px;
+  animation:cloud 8s linear infinite;
+}
+@keyframes cloud{
+  from{transform:translateX(620px)}
+  to{transform:translateX(-100px)}
+}
+.plane{
+  position:absolute;left:20px;bottom:25px;
+  font-size:52px;transform:rotate(-10deg);
+  transition:bottom .1s linear;
+}
+.multiplier{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  font-size:38px;font-weight:bold;color:#00ffb3;
+  text-shadow:0 0 20px #00ffb3;
+}
+.status{text-align:center;color:#a5bddb;margin:12px 0}
+.history-item{
+  padding:12px;border-bottom:1px solid #263952;
+  font-size:13px;display:flex;justify-content:space-between;gap:10px;
+}
+.success{color:#00ffad}
+.error{color:#ff6c6c}
+.notice{
+  padding:12px;background:#152b46;border-radius:9px;
+  font-size:12px;color:#b8cde5;margin-top:10px;
+}
+label{font-size:13px;color:#a9c1df}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">✈ XPCLUB.VN</div>
+  <p>FLIGHT CLUB • TRANG UY TÍN - THƯƠNG HIỆU</p>
+</header>
+
+<div class="container">
+
+<!-- ĐĂNG NHẬP -->
+<div id="auth" class="card">
+  <h2>🔐 Đăng nhập / Đăng ký</h2>
+  <div class="tabs">
+    <button onclick="showAuth('login')">Đăng nhập</button>
+    <button onclick="showAuth('register')">Đăng ký</button>
+  </div>
+
+  <input id="username" placeholder="Tên tài khoản">
+  <input id="password" type="password" placeholder="Mật khẩu">
+
+  <button id="authBtn" onclick="authenticate()">ĐĂNG NHẬP</button>
+  <p id="authMsg" class="status"></p>
+  <div class="notice">Tài khoản chỉ lưu trên trình duyệt này. Đây là bản demo, không sử dụng mật khẩu thật.</div>
+</div>
+
+<!-- TRANG CHỦ -->
+<div id="app" class="hidden">
+
+  <div class="card">
+    <h2>👤 Tài khoản của bạn</h2>
+    <p id="welcome">Xin chào!</p>
+    <div class="balance" id="balance">0đ</div>
+    <p class="small">Số dư</p>
+    <button class="btn-red" onclick="logout()">ĐĂNG XUẤT</button>
+  </div>
+
+  <!-- MÁY BAY -->
+  <div class="card">
+    <h2>✈️ FLIGHT GAME ( x 1000 )</h2>
+
+    <div class="plane-area" id="planeArea">
+      <span class="cloud" style="top:25px;animation-delay:-2s">☁️</span>
+      <span class="cloud" style="top:100px;animation-delay:-5s">☁️</span>
+      <div class="multiplier" id="multiplier">1.00x</div>
+      <div class="plane" id="plane">✈️</div>
+    </div>
+
+    <div class="status" id="gameStatus">Máy bay đang chờ cất cánh</div>
+
+    <label>Số tiền cược (VNĐ)</label>
+    <input type="number" id="betAmount" value="10000" min="1000">
+
+    <button id="buyBtn" class="btn-green" onclick="buy()">✈ MUA / CẤT CÁNH</button>
+    <button id="stopBtn" class="btn-red hidden" onclick="stopPlane()">🛑 DỪNG / NHẬN TIỀN</button>
+
+    <div class="notice">
+      Máy bay sẽ tăng hệ số ngẫu nhiên và có thể rơi bất cứ lúc nào.
+      Dừng trước khi máy bay rơi để nhận tiền.
+    </div>
+  </div>
+
+  <!-- MÃ QUÀ TẶNG -->
+  <div class="card">
+    <h2>🎁 Mã quà tặng</h2>
+    <input id="giftCode" placeholder="Nhập mã quà tặng">
+    <button class="btn-purple" onclick="redeemCode()">NHẬN QUÀ</button>
+    <p id="giftMsg" class="status"></p>
+  </div>
+
+  <!-- NẠP TIỀN -->
+  <div class="card">
+    <h2>💳 Nạp tiền </h2>
+
+    <label>Loại thẻ</label>
+    <select id="cardType">
+      <option>Viettel</option>
+      <option>Mobifone</option>
+      <option>Vinaphone</option>
+      <option>Garena</option>
+    </select>
+
+    <label>Mệnh giá</label>
+    <select id="cardValue">
+      <option value="10000">10.000đ</option>
+      <option value="20000">20.000đ</option>
+      <option value="50000">50.000đ</option>
+      <option value="100000">100.000đ</option>
+      <option value="200000">200.000đ</option>
+      <option value="500000">500.000đ</option>
+    </select>
+
+    <label>Mã thẻ</label>
+    <input id="cardCode" placeholder="Nhập mã thẻ">
+
+    <label>Số seri</label>
+    <input id="cardSerial" placeholder="Nhập số seri">
+
+    <button onclick="deposit()">XÁC NHẬN NẠP</button>
+    <p id="depositMsg" class="status"></p>
+    <div class="notice">Bản demo không xác thực thẻ và không cộng tiền từ thẻ thật.</div>
+  </div>
+
+  <!-- RÚT TIỀN -->
+  <div class="card">
+    <h2>🏦 Rút tiền </h2>
+
+    <label>Số tiền muốn rút</label>
+    <input id="withdrawAmount" type="number" placeholder="Nhập số tiền">
+
+    <label>Số tài khoản</label>
+    <input id="bankAccount" placeholder="Nhập số tài khoản">
+
+    <label>Tên chủ tài khoản</label>
+    <input id="bankName" placeholder="Nhập tên chủ tài khoản">
+
+    <button class="btn-green" onclick="withdraw()">XÁC NHẬN RÚT TIỀN</button>
+    <p id="withdrawMsg" class="status"></p>
+    <div class="notice">Giao dịch rút tiền chỉ là mô phỏng, không chuyển tiền thật.</div>
+  </div>
+
+  <!-- LỊCH SỬ -->
+  <div class="card">
+    <h2>📜 Lịch sử giao dịch</h2>
+    <div id="history"><p class="small">Chưa có giao dịch.</p></div>
+  </div>
+
+</div>
+</div>
+
+<script>
+let users = JSON.parse(localStorage.getItem("xp_users") || "{}");
+let currentUser = localStorage.getItem("xp_current") || "";
+let authMode = "login";
+
+let game = {
+  active:false,
+  bet:0,
+  x:1,
+  crashAt:0,
+  timer:null,
+  start:0
+};
+
+function saveUsers(){
+  localStorage.setItem("xp_users",JSON.stringify(users));
+}
+
+function money(n){
+  return Math.floor(n).toLocaleString("vi-VN")+"đ";
+}
+
+function showAuth(mode){
+  authMode=mode;
+  document.getElementById("authBtn").textContent=
+    mode==="login"?"ĐĂNG NHẬP":"ĐĂNG KÝ TÀI KHOẢN";
+  document.getElementById("authMsg").textContent="";
+}
+
+function authenticate(){
+  let u=document.getElementById("username").value.trim();
+  let p=document.getElementById("password").value;
+
+  if(!u||!p){
+    authMsg.textContent="Vui lòng nhập đầy đủ thông tin.";
+    return;
+  }
+
+  if(authMode==="register"){
+    if(users[u]){
+      authMsg.textContent="Tên tài khoản đã tồn tại.";
+      return;
+    }
+    users[u]={password:p,balance:0,history:[],codes:[]};
+    saveUsers();
+    authMsg.textContent="Đăng ký thành công! Hãy đăng nhập.";
+    showAuth("login");
+    return;
+  }
+
+  if(!users[u]||users[u].password!==p){
+    authMsg.textContent="Sai tài khoản hoặc mật khẩu.";
+    return;
+  }
+
+  currentUser=u;
+  localStorage.setItem("xp_current",u);
+  openApp();
+}
+
+function openApp(){
+  auth.classList.add("hidden");
+  app.classList.remove("hidden");
+  welcome.textContent="Xin chào, "+currentUser+"!";
+  updateBalance();
+  renderHistory();
+}
+
+function logout(){
+  if(game.active){
+    clearInterval(game.timer);
+    game.active=false;
+  }
+  currentUser="";
+  localStorage.removeItem("xp_current");
+  app.classList.add("hidden");
+  auth.classList.remove("hidden");
+}
+
+function updateBalance(){
+  balance.textContent=money(users[currentUser].balance);
+}
+
+function addHistory(type,amount,status){
+  users[currentUser].history.unshift({
+    type,amount,status,
+    time:new Date().toLocaleString("vi-VN")
+  });
+  saveUsers();
+  renderHistory();
+}
+
+function renderHistory(){
+  let h=users[currentUser].history;
+  history.innerHTML=h.length?h.map(t=>`
+    <div class="history-item">
+      <div>
+        <b>${t.type}</b><br>
+        <span class="small">${t.time}</span><br>
+        <span class="small">${t.status}</span>
+      </div>
+      <b>${t.amount>=0?"+":""}${money(t.amount)}</b>
+    </div>
+  `).join(""):'<p class="small">Chưa có giao dịch.</p>';
+}
+
+function buy(){
+  if(game.active)return;
+
+  let bet=Number(betAmount.value);
+  if(!Number.isFinite(bet)||bet<1000){
+    gameStatus.textContent="Số tiền cược tối thiểu là 1.000đ.";
+    return;
+  }
+  if(bet>users[currentUser].balance){
+    gameStatus.textContent="Số dư không đủ.";
+    return;
+  }
+
+  users[currentUser].balance-=bet;
+  updateBalance();
+
+  game.active=true;
+  game.bet=bet;
+  game.x=1;
+  game.start=Date.now();
+
+  // Hệ số rơi ngẫu nhiên từ khoảng 1.05x đến 1000x.
+  game.crashAt=Math.min(1000,1.05+Math.pow(Math.random(),2.2)*998.95);
+
+  buyBtn.classList.add("hidden");
+  stopBtn.classList.remove("hidden");
+  gameStatus.textContent="🚀 Máy bay đang bay...";
+  addHistory("Đặt cược",-bet,"Đang chơi");
+
+  game.timer=setInterval(()=>{
+    let elapsed=(Date.now()-game.start)/1000;
+    game.x=Math.min(1000,Math.exp(elapsed*0.20));
+    multiplier.textContent=game.x.toFixed(2)+"x";
+
+    let height=Math.min(155,25+elapsed*12);
+    plane.style.bottom=height+"px";
+    plane.style.left=Math.min(75,20+elapsed*4)+"%";
+
+    if(game.x>=game.crashAt || game.x>=1000){
+      crash();
+    }
+  },100);
+}
+
+function stopPlane(){
+  if(!game.active)return;
+
+  clearInterval(game.timer);
+  game.active=false;
+
+  let win=Math.floor(game.bet*game.x);
+  users[currentUser].balance+=win;
+  updateBalance();
+
+  gameStatus.textContent="🎉 Dừng thành công! Nhận "+money(win);
+  addHistory("Thắng cược",win,"Thành công");
+
+  resetGame();
+}
+
+function crash(){
+  if(!game.active)return;
+
+  clearInterval(game.timer);
+  game.active=false;
+
+  multiplier.textContent="💥 RƠI!";
+  gameStatus.textContent="Máy bay đã rơi! Bạn thua "+money(game.bet);
+  addHistory("Thua cược",0,"Máy bay rơi");
+
+  resetGame();
+}
+
+function resetGame(){
+  buyBtn.classList.remove("hidden");
+  stopBtn.classList.add("hidden");
+  plane.style.bottom="25px";
+  plane.style.left="20px";
+}
+
+function redeemCode(){
+  let code=giftCode.value.trim();
+  let msg=document.getElementById("giftMsg");
+
+  if(code!=="1511"){
+    msg.textContent="Mã quà tặng không hợp lệ.";
+    return;
+  }
+
+  if(users[currentUser].codes.includes(code)){
+    msg.textContent="Mã này đã được sử dụng.";
+    return;
+  }
+
+  users[currentUser].codes.push(code);
+  users[currentUser].balance+=300000;
+  saveUsers();
+  updateBalance();
+  addHistory("Quà tặng +300.000đ",300000,"Thành công");
+  msg.textContent="🎉 Nhận thành công 300.000đ!";
+}
+
+function deposit(){
+  let type=cardType.value;
+  let value=Number(cardValue.value);
+  let code=cardCode.value.trim();
+  let serial=cardSerial.value.trim();
+
+  if(!code||!serial){
+    depositMsg.textContent="Vui lòng nhập mã thẻ và số seri.";
+    return;
+  }
+
+  addHistory("Nạp thẻ "+type+" "+money(value),0,"Đang xử lý");
+  depositMsg.textContent="Giao dịch đã được ghi nhận ở trạng thái mô phỏng.";
+  cardCode.value="";
+  cardSerial.value="";
+}
+
+function withdraw(){
+  let amount=Number(withdrawAmount.value);
+  let account=bankAccount.value.trim();
+  let name=bankName.value.trim();
+
+  if(!Number.isFinite(amount)||amount<=0||!account||!name){
+    withdrawMsg.textContent="Vui lòng nhập đầy đủ thông tin hợp lệ.";
+    return;
+  }
+
+  if(amount>users[currentUser].balance){
+    withdrawMsg.textContent="Số dư không đủ.";
+    return;
+  }
+
+  users[currentUser].balance-=amount;
+  updateBalance();
+
+  addHistory("Rút tiền "+name,-amount,"Đang xử lý");
+  withdrawMsg.textContent="✓ Yêu cầu rút tiền mô phỏng đang xử lý.";
+}
+
+if(currentUser&&users[currentUser]){
+  openApp();
+}
+</script>
+</body>
+</html>
